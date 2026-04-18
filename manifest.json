@@ -2,7 +2,7 @@
   "name": "匯率轉換器",
   "short_name": "匯率",
   "description": "即時匯率轉換，支援離線使用",
-  "start_url": "/index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4A90D9",
