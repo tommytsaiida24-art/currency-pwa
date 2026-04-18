@@ -1,6 +1,7 @@
 // Currency PWA - Main Application
 
 const API_URL = 'https://api.frankfurter.app';
+const CORS_PROXY = '';
 
 // State
 let currencies = [];
@@ -46,13 +47,21 @@ async function loadCurrencies() {
             return;
         }
 
-        // Fetch from API
-        const response = await fetch(`${API_URL}/latest`);
+        // Fetch from API - use relative path on Vercel, direct API for local dev
+        const isVercel = window.location.hostname.includes('vercel.app');
+        const apiEndpoint = isVercel ? '/api/rates' : `${API_URL}/latest`;
+        const response = await fetch(apiEndpoint);
         if (!response.ok) throw new Error('Network response was not ok');
         
         const data = await response.json();
         rates = data.rates;
-        currencies = ['USD', ...Object.keys(rates)]; // USD as base
+        currencies = ['EUR', ...Object.keys(rates)]; // EUR is the base
+        
+        // Frankfurter doesn't support TWD, so we add it manually
+        // 1 USD ≈ 31.5 TWD, and 1 EUR ≈ 1.18 USD
+        // So 1 EUR ≈ 1.18 * 31.5 ≈ 37.2 TWD
+        rates['TWD'] = rates['TWD'] || (31.5 * (rates['USD'] || 1.1797));
+        if (!currencies.includes('TWD')) currencies.push('TWD');
         
         // Cache the rates
         lastRates = rates;
@@ -67,7 +76,11 @@ async function loadCurrencies() {
         // Use cached data if available
         if (Object.keys(lastRates).length > 0) {
             rates = lastRates;
-            currencies = ['USD', ...Object.keys(rates)];
+            currencies = ['EUR', ...Object.keys(rates)];
+            if (!currencies.includes('TWD')) {
+                rates['TWD'] = 31.5 * (rates['USD'] || 1.1797);
+                currencies.push('TWD');
+            }
             showToast('使用離線緩存匯率');
         } else {
             showToast('無法取得匯率，請檢查網路');
@@ -82,7 +95,7 @@ function updateLastUpdateTime() {
 
 // Populate currency dropdowns
 function populateCurrencyDropdowns() {
-    const commonCurrencies = ['USD', 'EUR', 'JPY', 'GBP', 'CNY', 'KRW', 'TWD', 'HKD', 'AUD', 'CAD'];
+    const commonCurrencies = ['TWD', 'USD', 'EUR', 'JPY', 'GBP', 'CNY', 'KRW', 'HKD', 'AUD', 'CAD'];
     
     // Sort to put common currencies first
     const sortedCurrencies = [
@@ -118,6 +131,8 @@ function setupEventListeners() {
 }
 
 // Convert currency
+// All rates are EUR-based: rates[X] = X per 1 EUR
+// To convert A to B: (1 A) * (1 EUR / rates[A]) * (rates[B] / 1 EUR) = rates[B] / rates[A]
 function convert() {
     const from = fromCurrency.value;
     const to = toCurrency.value;
@@ -130,14 +145,13 @@ function convert() {
     }
 
     let rate;
-    if (from === 'USD') {
-        rate = rates[to] || 0;
-    } else if (to === 'USD') {
-        rate = 1 / (rates[from] || 0);
+    if (from === to) {
+        rate = 1;
     } else {
-        const fromToUSD = 1 / (rates[from] || 0);
-        const usdToTo = rates[to] || 0;
-        rate = fromToUSD * usdToTo;
+        // Convert via EUR: A -> EUR -> B
+        // 1 A = (1/rates[A]) EUR
+        // (1/rates[A]) EUR = (1/rates[A]) * rates[B] B
+        rate = (rates[to] || 0) / (rates[from] || 0);
     }
 
     const result = amount * rate;
