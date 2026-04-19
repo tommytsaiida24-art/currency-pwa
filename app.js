@@ -75,6 +75,10 @@ async function loadCurrencies() {
         rates['TWD'] = rates['TWD'] || (31.5 * (rates['USD'] || 1.1797));
         if (!currencies.includes('TWD')) currencies.push('TWD');
 
+        // EUR is the API base (base = 1), but not in rates object - add it
+        rates['EUR'] = 1;
+        if (!currencies.includes('EUR')) currencies.push('EUR');
+
         currencies.sort((a, b) => a.localeCompare(b));
 
         lastRates = rates;
@@ -89,6 +93,8 @@ async function loadCurrencies() {
         if (Object.keys(lastRates).length > 0) {
             rates = lastRates;
             currencies = Object.keys(rates);
+            rates['EUR'] = 1;
+            if (!currencies.includes('EUR')) currencies.push('EUR');
             currencies.sort((a, b) => a.localeCompare(b));
             showToast('使用離線緩存匯率');
         } else {
