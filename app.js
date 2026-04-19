@@ -15,7 +15,6 @@ let lastFetchTime = parseInt(localStorage.getItem('lastFetchTime') || '0');
 const baseAmountEl = document.getElementById('baseAmount');
 const baseCurrencyEl = document.getElementById('baseCurrency');
 const currencyListEl = document.getElementById('currencyList');
-const ratesPanelEl = document.getElementById('ratesPanel');
 const lastUpdateEl = document.getElementById('lastUpdate');
 const toastEl = document.getElementById('toast');
 const modalEl = document.getElementById('currencyModal');
@@ -25,7 +24,7 @@ const currencySearchEl = document.getElementById('currencySearch');
 const currencyGridEl = document.getElementById('currencyGrid');
 const saveCurrencyBtnEl = document.getElementById('saveCurrencyBtn');
 
-// Currency names (subset for display)
+// Currency names
 const currencyNames = {
     USD: '美元', EUR: '歐元', JPY: '日圓', GBP: '英鎊', TWD: '台幣',
     CNY: '人民幣', KRW: '韓元', HKD: '港幣', AUD: '澳幣', CAD: '加幣',
@@ -58,7 +57,6 @@ async function loadCurrencies() {
         if (now - lastFetchTime < oneHour && Object.keys(lastRates).length > 0) {
             rates = lastRates;
             currencies = Object.keys(rates);
-            sortCurrencies();
             updateLastUpdateTime();
             return;
         }
@@ -74,7 +72,7 @@ async function loadCurrencies() {
         rates['TWD'] = rates['TWD'] || (31.5 * (rates['USD'] || 1.1797));
         if (!currencies.includes('TWD')) currencies.push('TWD');
 
-        sortCurrencies();
+        currencies.sort((a, b) => a.localeCompare(b));
 
         lastRates = rates;
         lastFetchTime = now;
@@ -88,20 +86,12 @@ async function loadCurrencies() {
         if (Object.keys(lastRates).length > 0) {
             rates = lastRates;
             currencies = Object.keys(rates);
-            sortCurrencies();
+            currencies.sort((a, b) => a.localeCompare(b));
             showToast('使用離線緩存匯率');
         } else {
             showToast('無法取得匯率');
         }
     }
-}
-
-function sortCurrencies() {
-    currencies.sort((a, b) => {
-        if (a === baseCurrency) return -1;
-        if (b === baseCurrency) return 1;
-        return a.localeCompare(b);
-    });
 }
 
 function updateLastUpdateTime() {
@@ -124,82 +114,63 @@ function getRate(targetCode) {
     return targetRate / baseRate;
 }
 
-// Render everything
+// Render all UI
 function renderAll() {
     baseAmountEl.value = baseAmount;
     baseCurrencyEl.textContent = `${baseCurrency} ▾`;
+    document.getElementById('baseFlag').textContent = getFlagEmoji(baseCurrency);
     renderCurrencyList();
-    renderRatesPanel();
 }
 
+// Render the currency list
 function renderCurrencyList() {
-    // Show selected currencies (excluding base) in left panel
-    const listCurrencies = selectedCurrencies.filter(c => c !== baseCurrency);
-
-    if (listCurrencies.length === 0) {
-        currencyListEl.innerHTML = '<p class="empty-hint">點擊 + 新增幣別</p>';
-        return;
-    }
-
-    currencyListEl.innerHTML = listCurrencies.map(code => {
-        const rate = getRate(code);
-        const name = currencyNames[code] || code;
-        return `
-            <div class="currency-item" data-code="${code}">
-                <div>
-                    <span class="flag">${getFlagEmoji(code)}</span>
-                    <span class="code">${code}</span>
-                    <div class="name">${name}</div>
-                </div>
-                <div>
-                    <div class="rate">${rate.toFixed(4)}</div>
-                    <div class="unit">${baseCurrency} → ${code}</div>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function renderRatesPanel() {
     const amount = parseFloat(baseAmount) || 0;
 
     if (selectedCurrencies.length === 0) {
-        ratesPanelEl.innerHTML = '<p class="empty-hint">點擊右上角 + 新增幣別</p>';
+        currencyListEl.innerHTML = '<p class="empty-hint">點擊右上角 + 新增幣別</p>';
         return;
     }
 
-    ratesPanelEl.innerHTML = selectedCurrencies.map(code => {
+    currencyListEl.innerHTML = selectedCurrencies.map(code => {
         const rate = getRate(code);
         const converted = amount * rate;
         const name = currencyNames[code] || code;
-
         return `
-            <div class="rate-card" data-code="${code}">
-                <div class="rate-card-header">
+            <div class="currency-item" data-code="${code}">
+                <div class="currency-item-left">
+                    <span class="flag">${getFlagEmoji(code)}</span>
                     <div>
-                        <div class="code">${getFlagEmoji(code)} ${code}</div>
+                        <div class="code">${code}</div>
                         <div class="name">${name}</div>
+                        <span class="rate-badge">${baseCurrency} → ${code}</span>
                     </div>
-                    <span class="rate-badge">${baseCurrency} → ${code}</span>
                 </div>
-                <div class="converted">${converted.toFixed(4)} ${code}</div>
-                <div class="rate-info">1 ${baseCurrency} = ${rate.toFixed(4)} ${code}</div>
+                <div>
+                    <div class="converted">${converted.toFixed(4)}</div>
+                    <div class="rate-label">1 ${baseCurrency} = ${rate.toFixed(4)}</div>
+                </div>
             </div>
         `;
     }).join('');
 }
 
+// Render currency selection grid in modal
 function renderCurrencyGrid(filter = '') {
-    const filterUpper = filter.toUpperCase();
     const allCurrencies = [...currencies].sort();
+    const filterUpper = filter.toUpperCase();
 
-    currencyGridEl.innerHTML = allCurrencies.map(code => {
+    const filtered = filterUpper
+        ? allCurrencies.filter(c => c.includes(filterUpper) || (currencyNames[c] || '').includes(filterUpper))
+        : allCurrencies;
+
+    currencyGridEl.innerHTML = filtered.map(code => {
         const isSelected = selectedCurrencies.includes(code);
         const name = currencyNames[code] || code;
         return `
             <div class="grid-item ${isSelected ? 'selected' : ''}" data-code="${code}">
                 <span class="check">✓</span>
                 <span class="code">${code}</span>
+                <span class="grid-name">${name}</span>
             </div>
         `;
     }).join('');
@@ -229,10 +200,10 @@ function setupEventListeners() {
     baseAmountEl.addEventListener('input', debounce(() => {
         baseAmount = parseFloat(baseAmountEl.value) || 0;
         localStorage.setItem('baseAmount', baseAmount.toString());
-        renderRatesPanel();
+        renderCurrencyList();
     }, 200));
 
-    // Base currency selector (simple: just cycle through selected)
+    // Base currency selector - cycle through selected currencies
     baseCurrencyEl.addEventListener('click', () => {
         if (selectedCurrencies.length < 2) {
             showToast('請先新增多個幣別');
@@ -242,6 +213,7 @@ function setupEventListeners() {
         const nextIdx = (idx + 1) % selectedCurrencies.length;
         const prev = baseCurrency;
         baseCurrency = selectedCurrencies[nextIdx];
+        // Move previous base to front of list
         selectedCurrencies = selectedCurrencies.filter(c => c !== baseCurrency);
         if (!selectedCurrencies.includes(prev)) selectedCurrencies.unshift(prev);
         localStorage.setItem('baseCurrency', baseCurrency);
@@ -252,6 +224,7 @@ function setupEventListeners() {
 
     // Open modal
     addBtnEl.addEventListener('click', () => {
+        currencySearchEl.value = '';
         renderCurrencyGrid();
         modalEl.classList.add('open');
     });
@@ -278,11 +251,10 @@ function setupEventListeners() {
         showToast('幣別已儲存');
     });
 
-    // Click on currency list item to use it
+    // Click on currency list item to set as base
     currencyListEl.addEventListener('click', (e) => {
         const item = e.target.closest('.currency-item');
         if (item) {
-            // Set as base currency
             const prev = baseCurrency;
             baseCurrency = item.dataset.code;
             selectedCurrencies = selectedCurrencies.filter(c => c !== baseCurrency);
@@ -291,18 +263,6 @@ function setupEventListeners() {
             localStorage.setItem('selectedCurrencies', JSON.stringify(selectedCurrencies));
             renderAll();
             showToast(`基準幣別：${baseCurrency}`);
-        }
-    });
-
-    // Click on rate card
-    ratesPanelEl.addEventListener('click', (e) => {
-        const card = e.target.closest('.rate-card');
-        if (card) {
-            // Copy converted amount to clipboard
-            const text = card.querySelector('.converted').textContent;
-            navigator.clipboard?.writeText(text).then(() => {
-                showToast('已複製');
-            });
         }
     });
 }

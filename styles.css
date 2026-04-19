@@ -92,20 +92,25 @@ main {
     overflow: hidden;
 }
 
-/* ========== Left Panel ========== */
-.currency-panel {
-    width: 45%;
-    min-width: 160px;
-    border-right: 1px solid var(--border);
+/* ========== Left Panel (full width) ========== */
+.currency-panel-full {
+    width: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
 .base-input-area {
-    padding: 16px;
+    padding: 20px;
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
+}
+
+.base-currency-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
 }
 
 .base-currency {
@@ -113,23 +118,22 @@ main {
     font-weight: 700;
     color: var(--accent);
     cursor: pointer;
-    margin-bottom: 8px;
     user-select: none;
 }
 
-.base-currency::after {
-    content: '';
+.base-flag {
+    font-size: 20px;
 }
 
 .base-input-area input {
     width: 100%;
     background: transparent;
     border: none;
-    font-size: 36px;
+    font-size: 40px;
     font-weight: 700;
     color: var(--text-primary);
     outline: none;
-    padding: 4px 0;
+    padding: 8px 0;
 }
 
 .base-input-area input::placeholder {
@@ -140,14 +144,13 @@ main {
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 8px 0;
 }
 
 .currency-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 16px;
+    padding: 18px 20px;
     cursor: pointer;
     transition: background 0.15s;
     border-bottom: 1px solid var(--border);
@@ -157,95 +160,51 @@ main {
     background: var(--bg-card-hover);
 }
 
-.currency-item .code {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-primary);
+.currency-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
 .currency-item .flag {
-    font-size: 14px;
-    margin-right: 8px;
+    font-size: 22px;
+}
+
+.currency-item .code {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .currency-item .name {
     font-size: 12px;
     color: var(--text-muted);
-}
-
-.currency-item .rate {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--accent);
-    text-align: right;
-}
-
-.currency-item .unit {
-    font-size: 11px;
-    color: var(--text-muted);
-    text-align: right;
-}
-
-/* ========== Right Panel ========== */
-.rates-panel {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.rate-card {
-    background: var(--bg-card);
-    border-radius: 16px;
-    padding: 20px;
-    transition: background 0.15s;
-}
-
-.rate-card:active {
-    background: var(--bg-card-hover);
-}
-
-.rate-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-}
-
-.rate-card .code {
-    font-size: 20px;
-    font-weight: 700;
-}
-
-.rate-card .name {
-    font-size: 12px;
-    color: var(--text-muted);
     margin-top: 2px;
 }
 
-.rate-card .converted {
-    font-size: 26px;
+.currency-item .converted {
+    font-size: 18px;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    text-align: right;
 }
 
-.rate-card .rate-info {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.rate-card .rate-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 20px;
+.currency-item .rate-label {
     font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 2px;
+}
+
+.currency-item .rate-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
     font-weight: 600;
     background: rgba(233, 69, 96, 0.15);
     color: var(--accent);
+    margin-top: 4px;
 }
 
 /* ========== Modal ========== */
@@ -370,6 +329,19 @@ main {
     display: block;
 }
 
+.grid-item .code {
+    font-size: 16px;
+    font-weight: 700;
+    display: block;
+}
+
+.grid-item .grid-name {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 2px;
+}
+
 .modal-footer {
     padding: 16px 20px;
     padding-bottom: calc(16px + env(safe-area-inset-bottom));
@@ -427,26 +399,19 @@ footer .version {
 
 /* ========== Mobile adjustments ========== */
 @media (max-width: 500px) {
-    main {
-        flex-direction: column;
+    .base-input-area input {
+        font-size: 28px;
     }
 
-    .currency-panel {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-        max-height: 45%;
+    .currency-item {
+        padding: 14px 16px;
     }
 
-    .rates-panel {
-        padding: 12px;
+    .currency-item .converted {
+        font-size: 16px;
     }
 
     .currency-grid {
         grid-template-columns: repeat(3, 1fr);
-    }
-
-    .base-input-area input {
-        font-size: 28px;
     }
 }

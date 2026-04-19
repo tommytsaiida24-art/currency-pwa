@@ -23,19 +23,17 @@
 
         <main>
             <!-- Left Panel: Currency List -->
-            <div class="panel currency-panel" id="currencyPanel">
+            <div class="currency-panel-full" id="currencyPanel">
                 <div class="base-input-area">
-                    <div class="base-currency" id="baseCurrency">USD ▾</div>
+                    <div class="base-currency-row">
+                        <span class="base-currency" id="baseCurrency">USD ▾</span>
+                        <span class="base-flag" id="baseFlag">🇺🇸</span>
+                    </div>
                     <input type="number" id="baseAmount" placeholder="輸入金額" value="1" step="0.01">
                 </div>
                 <div class="currency-list" id="currencyList">
                     <!-- Populated by JS -->
                 </div>
-            </div>
-
-            <!-- Right Panel: Rate Cards -->
-            <div class="panel rates-panel" id="ratesPanel">
-                <!-- Populated by JS -->
             </div>
         </main>
 
