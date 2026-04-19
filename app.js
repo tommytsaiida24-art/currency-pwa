@@ -197,11 +197,11 @@ function renderCurrencyGrid(filter = '') {
 // Setup event listeners
 function setupEventListeners() {
     // Base amount change
-    baseAmountEl.addEventListener('input', debounce(() => {
+    baseAmountEl.addEventListener('input', () => {
         baseAmount = parseFloat(baseAmountEl.value) || 0;
         localStorage.setItem('baseAmount', baseAmount.toString());
         renderCurrencyList();
-    }, 200));
+    });
 
     // Base currency selector - cycle through selected currencies
     baseCurrencyEl.addEventListener('click', () => {
