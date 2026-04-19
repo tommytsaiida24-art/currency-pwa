@@ -61,7 +61,10 @@ async function loadCurrencies() {
             return;
         }
 
-        const response = await fetch(`${API_URL}/latest`);
+        // Use Vercel proxy on Vercel, direct API otherwise
+        const isVercel = window.location.hostname.includes('vercel.app');
+        const apiEndpoint = isVercel ? '/api/rates' : `${API_URL}/latest`;
+        const response = await fetch(apiEndpoint);
         if (!response.ok) throw new Error('Network response was not ok');
 
         const data = await response.json();
