@@ -112,7 +112,9 @@ function getRate(targetCode) {
 
     // All rates are EUR-based: rates[X] = X per 1 EUR
     const baseRate = rates[base] || 1;
-    const targetRate = rates[target] || 0;
+    const targetRate = rates[target];
+
+    if (!targetRate) return 0;
 
     return targetRate / baseRate;
 }
@@ -127,14 +129,16 @@ function renderAll() {
 
 // Render the currency list
 function renderCurrencyList() {
-    const amount = parseFloat(baseAmount) || 0;
+    const amount = parseFloat(baseAmountEl.value) || 0;
+    // Filter out base currency from the list (don't show base converting to itself)
+    const listCurrencies = selectedCurrencies.filter(code => code !== baseCurrency);
 
-    if (selectedCurrencies.length === 0) {
+    if (listCurrencies.length === 0) {
         currencyListEl.innerHTML = '<p class="empty-hint">點擊右上角 + 新增幣別</p>';
         return;
     }
 
-    currencyListEl.innerHTML = selectedCurrencies.map(code => {
+    currencyListEl.innerHTML = listCurrencies.map(code => {
         const rate = getRate(code);
         const converted = amount * rate;
         const name = currencyNames[code] || code;
