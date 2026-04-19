@@ -1,0 +1,43 @@
+name: Update Version
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          # Get the latest tag that matches v* pattern
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          # Strip 'v' prefix for display
+          VERSION=${TAG#v}
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update version in index.html
+        run: |
+          CURRENT=$(grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' index.html | head -1)
+          NEW="v${{ steps.get_tag.outputs.version }}"
+          echo "Current version: $CURRENT"
+          echo "New version: $NEW"
+          if [ "$CURRENT" != "$NEW" ]; then
+            echo "Updating version..."
+            sed -i "s/v[0-9]\+\.[0-9]\+\.[0-9]\+/$NEW/g" index.html
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add index.html
+            git diff --cached --quiet || git commit -m "chore: sync version to $NEW"
+            git push
+          else
+            echo "Version already up to date."
+          fi
