@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="theme-color" content="#4A90D9">
+    <meta name="theme-color" content="#1a1a2e">
     <title>匯率轉換器</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -14,43 +14,28 @@
 <body>
     <div class="app">
         <header>
-            <h1>💱 匯率轉換器</h1>
-            <p class="subtitle">即時匯率，離線也能用</p>
+            <div class="header-left">
+                <h1>💱 匯率</h1>
+                <span class="last-update" id="lastUpdate"></span>
+            </div>
+            <button class="add-btn" id="addBtn" title="管理幣別">+</button>
         </header>
 
         <main>
-            <div class="converter-card">
-                <div class="input-group">
-                    <label>從</label>
-                    <div class="currency-input">
-                        <select id="fromCurrency"></select>
-                        <input type="number" id="fromAmount" placeholder="0.00" step="0.01">
-                    </div>
+            <!-- Left Panel: Currency List -->
+            <div class="panel currency-panel" id="currencyPanel">
+                <div class="base-input-area">
+                    <div class="base-currency" id="baseCurrency">USD ▾</div>
+                    <input type="number" id="baseAmount" placeholder="輸入金額" value="1" step="0.01">
                 </div>
-
-                <button class="swap-btn" id="swapBtn" title="交換幣別">⇄</button>
-
-                <div class="input-group">
-                    <label>到</label>
-                    <div class="currency-input">
-                        <select id="toCurrency"></select>
-                        <input type="number" id="toAmount" placeholder="0.00" readonly>
-                    </div>
+                <div class="currency-list" id="currencyList">
+                    <!-- Populated by JS -->
                 </div>
-
-                <div class="rate-info" id="rateInfo">
-                    <span id="exchangeRate"></span>
-                    <span id="lastUpdate"></span>
-                </div>
-
-                <button class="convert-btn" id="convertBtn">轉換</button>
             </div>
 
-            <div class="favorites-section">
-                <h3>⭐ 收藏的幣別</h3>
-                <div class="favorites-list" id="favoritesList">
-                    <p class="hint">點擊 💛 可以收藏常用幣別</p>
-                </div>
+            <!-- Right Panel: Rate Cards -->
+            <div class="panel rates-panel" id="ratesPanel">
+                <!-- Populated by JS -->
             </div>
         </main>
 
@@ -60,6 +45,26 @@
         </footer>
     </div>
 
+    <!-- Add/Edit Currency Modal -->
+    <div class="modal" id="currencyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>管理幣別</h2>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div class="modal-search">
+                <input type="text" id="currencySearch" placeholder="搜尋幣別...">
+            </div>
+            <div class="currency-grid" id="currencyGrid">
+                <!-- All available currencies -->
+            </div>
+            <div class="modal-footer">
+                <button class="save-btn" id="saveCurrencyBtn">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
     <div class="toast" id="toast"></div>
 
     <script src="app.js"></script>
